@@ -1,9 +1,12 @@
 import hashlib
 import json
+import logging
 import os
 
 import diskcache
 from openai import OpenAI
+
+logger = logging.getLogger(__name__)
 
 NEBIUS_BASE_URL = "https://api.tokenfactory.nebius.com/v1/"
 DEFAULT_MODEL = "meta-llama/Llama-3.3-70B-Instruct"
@@ -26,7 +29,7 @@ answer_schema = {
     "technologies": {"type": "array", "items": {"type": "string"}, "minItems": 1},
     "structure": {"type": "string"}
   },
-  "required": ["title", "bullets", "confidence"],
+  "required": ["summary", "technologies", "structure"],
   "additionalProperties": False
 }
 
@@ -47,11 +50,11 @@ def _call_llm(content_hash: str, repo_content: str) -> str:
     """Call Nebius LLM API. Cached by content hash to avoid duplicate calls."""
     
     client = _get_client()
-    print(f"Calling LLM with model {MODEL}")
-    print(f"Repo content: {repo_content[:100]}... (truncated)")
-        
+    logger.info("Calling LLM with model %s", MODEL)
+    logger.info("Repo content: %s... (truncated)", repo_content[:100])
+
     response = client.chat.completions.create(
-        model="meta-llama/Llama-3.3-70B-Instruct",
+        model=MODEL,
         messages=[
             {
                 "role": "system",
