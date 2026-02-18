@@ -62,6 +62,15 @@ class TestShouldSkip:
     def test_skip_nested_vendor(self):
         assert _should_skip("some/vendor/lib.go") is True
 
+    def test_skip_dotfile(self):
+        assert _should_skip(".gitignore") is True
+
+    def test_skip_dotfile_nested(self):
+        assert _should_skip("src/.env") is True
+
+    def test_skip_dotdir(self):
+        assert _should_skip(".github/workflows/ci.yml") is True
+
 
 class TestFilePriority:
     def test_readme_highest(self):

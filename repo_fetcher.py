@@ -62,9 +62,11 @@ def parse_github_url(url: str) -> tuple[str, str]:
 def _should_skip(path: str) -> bool:
     parts = path.split("/")
     for part in parts[:-1]:
-        if part in SKIP_DIRS:
+        if part in SKIP_DIRS or part.startswith("."):
             return True
     filename = parts[-1]
+    if filename.startswith("."):
+        return True
     if filename in SKIP_FILES:
         return True
     if any(filename.endswith(ext) for ext in SKIP_EXTENSIONS):

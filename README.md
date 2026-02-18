@@ -48,7 +48,7 @@ PYTHONPATH=. python -m pytest tests/ -v
 
 **Model**: Configurable via `NEBIUS_MODEL` env var (default: `meta-llama/Meta-Llama-3.1-70B-Instruct`). Fast, strong at instruction following and structured JSON output, cost-effective for summarization tasks.
 
-**Repo processing**: Files are fetched via the GitHub REST API (no cloning). The tree is retrieved recursively, then filtered to skip binary files, lock files, vendor directories, `node_modules/`, images, and compiled artifacts. Remaining files are prioritized: README first, then config/manifest files (`package.json`, `pyproject.toml`, etc.), then top-level source files, then deeper files. Content is accumulated up to a ~60k character budget to stay within context limits.
+**Repo processing**: Files are fetched via the GitHub REST API (no cloning). The tree is retrieved recursively, then filtered to skip binary files, lock files, vendor directories, `node_modules/`, dotfiles (names starting with `.`), images, and compiled artifacts. Remaining files are prioritized: README first, then config/manifest files (`package.json`, `pyproject.toml`, etc.), then top-level source files, then deeper files. Content is accumulated up to a ~60k character budget to stay within context limits.
 
 **Caching**: All LLM API calls are wrapped with a `diskcache.memoize` decorator. Identical repo contents (by SHA-256 hash) return cached results without making API calls.
 
