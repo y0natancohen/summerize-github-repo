@@ -48,7 +48,7 @@ def _call_llm(content_hash: str, repo_content: str) -> str:
     
     client = _get_client()
     print(f"Calling LLM with model {MODEL}")
-    print(f"Repo content: {repo_content[:1000]}... (truncated)")
+    print(f"Repo content: {repo_content[:100]}... (truncated)")
         
     response = client.chat.completions.create(
         model="meta-llama/Llama-3.3-70B-Instruct",
@@ -76,8 +76,6 @@ def _call_llm(content_hash: str, repo_content: str) -> str:
         }
     }
     )
-    print(type(response.choices[0].message.content))
-    print(response.choices[0].message.content)
     return response.choices[0].message.content
 
 
@@ -89,22 +87,25 @@ def _parse_response(raw: str) -> dict:
         if text.endswith("```"):
             text = text[:-3]
         text = text.strip()
-    data = json.loads(text)
+    
+    try:
+        data = json.loads(text)
+    except json.JSONDecodeError:
+        raise ValueError("Invalid JSON response from LLM")
+    
     if not isinstance(data.get("summary"), str):
         raise ValueError("Missing or invalid 'summary' field")
     if not isinstance(data.get("technologies"), list):
         raise ValueError("Missing or invalid 'technologies' field")
     if not isinstance(data.get("structure"), str):
         raise ValueError("Missing or invalid 'structure' field")
-    return {
-        "summary": data["summary"],
-        "technologies": data["technologies"],
-        "structure": data["structure"],
-    }
+    
+    return data
 
 
 def summarize_repo(repo_content: str) -> dict:
     """Generate a structured summary from repo content. Returns dict with summary, technologies, structure."""
     content_hash = _cache_key(repo_content)
     raw = _call_llm(content_hash, repo_content)
-    return _parse_response(raw)
+    data = _parse_response(raw)
+    return data
